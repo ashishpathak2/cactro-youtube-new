@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Companion Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-4">
+
+    <h1 class="text-2xl font-bold mb-4">YouTube Companion Dashboard</h1>
+
+<% if (error) { %>
+  <p class="text-red-500 mb-4"><%= error %></p>
+<% } %>
+
+<% if (!isAuthenticated) { %>
+  <a href="/auth/login" class="bg-blue-500 text-white px-4 py-2 rounded">Sign in with Google</a>
+<% } else { %>
+ <form onsubmit="event.preventDefault(); window.location.href = '/youtube/video/' + this.videoId.value;">
+  <input type="text" name="videoId" placeholder="Enter Video ID" class="border p-2 mr-2" required>
+  <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Fetch Video</button>
+</form>
+
+
+  <% if (videoDetails) { %>
+    <div class="mb-4">
+      <h2 class="text-xl font-semibold"><%= videoDetails.snippet.title %></h2>
+      <p><%= videoDetails.snippet.description %></p>
+      <p>Views: <%= videoDetails.statistics.viewCount %></p>
+      <p>Likes: <%= videoDetails.statistics.likeCount %></p>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold">Update Video Details</h3>
+      <form action="/youtube/video/update/<%= videoId %>" method="POST">
+        <input type="text" name="title" placeholder="New Title" class="border p-2 w-full mb-2">
+        <textarea name="description" placeholder="New Description" class="border p-2 w-full mb-2"></textarea>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Update Video</button>
+      </form>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold">Comments</h3>
+      <form action="/youtube/comment/<%= videoId %>" method="POST" class="mb-4">
+        <textarea name="comment" placeholder="Add a comment" class="border p-2 w-full mb-2" required></textarea>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Post Comment</button>
+      </form>
+      <% comments.forEach(comment => { %>
+        <div class="border p-2 mb-2">
+          <p><%= comment.snippet.topLevelComment.snippet.textDisplay %></p>
+          <form action="/youtube/comment/delete/<%= videoId %>/<%= comment.snippet.topLevelComment.id %>" method="POST" class="inline">
+            <button type="submit" class="text-red-500 mr-2">Delete</button>
+          </form>
+          <form action="/youtube/comment/reply/<%= videoId %>/<%= comment.snippet.topLevelComment.id %>" method="POST" class="inline">
+            <input type="text" name="reply" placeholder="Reply" class="border p-2 mr-2">
+            <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded">Reply</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold">Notes</h3>
+      <form action="/youtube/note/<%= videoId %>" method="POST">
+        <textarea name="content" placeholder="Add a note" class="border p-2 w-full mb-2" required></textarea>
+        <input type="text" name="tags" placeholder="Tags (comma-separated)" class="border p-2 w-full mb-2">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save Note</button>
+      </form>
+      <form action="/youtube/note/search/<%= videoId %>" method="POST" class="mt-4">
+        <input type="text" name="tag" placeholder="Search notes by tag" class="border p-2 mr-2">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Search Notes</button>
+      </form>
+      <% notes.forEach(note => { %>
+        <div class="border p-2 mb-2">
+          <p><%= note.content %></p>
+          <p class="text-sm text-gray-500">Tags: <%= note.tags.join(', ') %></p>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+<% } %>
+
+
+  </div>
+
+</body>
+</html>
